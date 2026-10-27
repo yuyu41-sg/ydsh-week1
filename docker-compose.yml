@@ -1,0 +1,73 @@
+# 云购生活新零售数仓项目 —— 第1周基础环境
+# 服务：MySQL(元数据库) + Hive Metastore + HiveServer2
+# 使用：把 6 张 CSV 放到本目录的 data/ 下，再 docker compose up -d
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ydsh-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      # 宿主机 3306 被占用，改映射到 3307；容器内仍是 3306，metastore 不受影响
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - ydsh-net
+
+  hive-metastore:
+    image: apache/hive:4.0.0
+    container_name: ydsh-metastore
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SERVICE_NAME: metastore
+      # 让 Hive 把元数据存到上面的 MySQL（首次启动自动建库建表）
+      METASTORE_DB_TYPE: mysql
+      METASTORE_DB_DRIVER: com.mysql.cj.jdbc.Driver
+      METASTORE_DB_HOST: mysql
+      METASTORE_DB_PORT: "3306"
+      METASTORE_DB_NAME: metastore
+      METASTORE_DB_USER: root
+      METASTORE_DB_PASSWORD: root
+    ports:
+      - "9083:9083"
+    volumes:
+      - ./data:/data
+    networks:
+      - ydsh-net
+
+  hive-server:
+    image: apache/hive:4.0.0
+    container_name: ydsh-hiveserver2
+    depends_on:
+      hive-metastore:
+        condition: service_started
+    environment:
+      SERVICE_NAME: hiveserver2
+      # 关键：告诉 HS2 元数据服务在另一个容器，否则默认找自己容器的 9083（空的）
+      SERVICE_OPTS: "-Dhive.metastore.uris=thrift://hive-metastore:9083"
+      # 关键：跳过本地 Derby 初始化，改用上面的远程 metastore（MySQL 支撑，可持久化）
+      IS_RESUME: "true"
+    ports:
+      - "10000:10000"   # JDBC（beeline 连接）
+      - "10002:10002"   # Web UI
+    volumes:
+      - ./data:/data   # 挂载 CSV，供 LOAD DATA LOCAL INPATH '/data/xxx.csv' 使用
+      - ./sql:/sql     # 挂载 SQL 脚本，供 beeline !run /sql/ods/... 使用
+    networks:
+      - ydsh-net
+
+volumes:
+  mysql-data:
+
+networks:
+  ydsh-net:
+    driver: bridge

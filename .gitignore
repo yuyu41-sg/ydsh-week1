@@ -1,0 +1,21 @@
+# ===== 数据文件（过大，不纳入版本库）=====
+模拟数据/*.csv
+*.csv
+data/*.csv
+
+# ===== 密钥与配置 =====
+.env
+*.key
+*.pem
+id_ed25519
+id_rsa
+
+# ===== 日志与临时文件 =====
+*.log
+__pycache__/
+*.pyc
+node_modules/
+.idea/
+.vscode/
+*.tmp
+.DS_Store
