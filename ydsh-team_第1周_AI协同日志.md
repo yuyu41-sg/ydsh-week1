@@ -1,60 +1,52 @@
-# ydsh-team 第 1 周 AI 协同日志
+# 第 1 周 AI 协同日志
 
-> 课程：企业项目实战实训　|　主题：项目启动 · 环境搭建 · Git 基础 · 数据导入与数据清洗（一）
-> 填写人：张宇（20230308059）　|　记录周期：2026-10-27 ~ 2026-10-30
+- 团队：ydsh-team　成员：张宇（20230308059）　填写日期：2026-10-30
 
-## 一、使用的工具与模型
+---
 
-| 工具/模型 | 用途 |
-|---|---|
-| WorkBuddy（AI 智能体助手） | 任务拆解、SQL 脚本编写、报错诊断、文档与交付物生成 |
-| Docker Desktop + apache/hive:4.0.0 + mysql:8.0 | 数仓运行环境（由 AI 辅助编写 docker-compose.yml 编排） |
-| Git / GitHub（yuyu41-sg） | 版本管理与远程推送（AI 指导 SSH 配置与规范提交） |
-| Apache Hive 4.0（beeline） | ODS 建表、数据导入、五维质量评估、清洗 SQL 执行 |
+## 一、使用的 AI 工具 / 模型
 
-## 二、协同记录表（≥5 条）
+- 工具名称：WorkBuddy（AI 智能体助手）　模型版本：内置大模型（对话 + 代码执行 + 文件操作）
+- 辅助环境：Docker Desktop（apache/hive:4.0.0、mysql:8.0）、Git 2.56、Apache Hive 4.0（beeline）
 
-| 序号 | 日期 | 协同事项 | 我的提问/意图 | AI 的贡献 | 产出/结果 |
-|---|---|---|---|---|---|
-| 1 | 10-27 | 环境编排 | 按手册一步步搭 Docker+Hive+MySQL 环境 | 编写 docker-compose.yml（MySQL 元数据库 + hive-metastore + hive-server），排查 3306 端口冲突改映射 3307 | 三容器全部 Up (healthy) |
-| 2 | 10-27 | 服务连通 | beeline 连接报 Connection refused | 诊断出 HS2 未配 metastore 地址 + 未就绪两点，补 SERVICE_OPTS 指向 hive-metastore:9083 并等待启动 | beeline 连通，CREATE DATABASE ydsh_ods 成功 |
-| 3 | 10-27 | ODS 导入 | 6 张 CSV 建表并导入 | 生成 create_ods.sql（skip.header.line.count）与 load_ods.sql（含 UNION ALL 行数校验），挂载 /sql 卷解决脚本路径问题 | 6 表行数与数据字典 100% 吻合 |
-| 4 | 10-27 | 质量评估 | 五维扫描脚本 | 编写 quality_check.sql，并把 Hive 不支持的 LEFT ANTI JOIN 改写为 LEFT JOIN ... WHERE 右表.主键 IS NULL | 五维全部跑通，产出质量预评估表 |
-| 5 | 10-27 | 数据清洗 | 缺失值与重复值处理 | 编写 missing_value.sql（年龄均值填充+email打标）与 dedup.sql（ROW_NUMBER 窗口去重） | dwd_user 校验通过；15600→15000，removed=600 与评估数吻合 |
-| 6 | 10-27 | Git 协作 | 系统无 git 命令，SSH 配置后如何推送 | 指导 npmmirror 镜像下载 Git for Windows 静默安装，配置用户信息与 ed25519 密钥 | 首次 push 成功（* [new branch] main -> main） |
-| 7 | 10-28 | 真实数据重灌 | 拿到课程真实 11.5 万行数据 | 全流程重灌指导：drop 重建 → 导入 → 评估 → 清洗；诊断 hive-server 残留 PID 启动崩溃并重建容器 | 真实数据行数全吻合，600 条冗余重复订单（586 组）去重闭环 |
-| 8 | 10-30 | 交付整理 | 按提交清单核对补齐交付物 | 差距分析、生成《数据质量预评估表.xlsx》、SQL 脚本按清单规范改名、生成本协同日志、打包提交压缩包 | 7 项提交物全部齐备 |
+---
 
-## 三、产出成果清单
+## 二、AI 协同记录表（至少 5 条）
 
-1. `README.md` —— 团队信息、角色分工、项目目标、阶段计划、技术栈、快速开始
-2. `环境搭建笔记.md` —— 9 个真实问题与解决方案（端口冲突、HS2 连通、Derby 误初始化、脚本挂载、LEFT ANTI JOIN、Git 安装、SSH 推送、PID 残留、MSYS 路径转换）
-3. `docker-compose.yml` + `.gitignore` —— 可复现的数仓环境编排与版本管理规范
-4. `sql/ods/create_ods.sql、load_ods.sql` —— 6 张 ODS 表建表 + 导入脚本，行数校验通过
-5. `sql/quality/quality_check.sql` + 《数据质量预评估表.md/.xlsx》—— 五维量化扫描结果
-6. `sql/clean/missing_value.sql、dedup.sql` —— 缺失值填充与 ROW_NUMBER 去重，前后行数对账吻合
-7. `执行步骤.md` —— 手册 9 步分步执行记录（含实测结果与踩坑）
-8. 远程仓库 ydsh-week1（GitHub），提交历史遵循 feat:/docs: 规范
+| 序号 | 提问 / 任务描述 | AI 产出摘要 | 人工修改与验证 | 是否采纳 |
+|------|----------------|-------------|----------------|----------|
+| 1 | 按手册搭建 Docker+Hive+MySQL 环境，一步步带我做 | 生成 docker-compose.yml（MySQL 元数据库 + hive-metastore + hive-server 三容器编排，含健康检查与依赖顺序） | 逐行核对了端口映射与服务依赖关系；发现本机 3306 被占，确认 AI 把宿主机侧改为 3307:3306 的方案合理 | 是 |
+| 2 | beeline 连接报 Connection refused，日志贴给你看 | 诊断出两点：HS2 未等 Metastore 就绪、未配 metastore 地址；给出 SERVICE_OPTS=thrift://hive-metastore:9083 并建议等待启动 | 自己执行 docker logs 确认 HS2 就绪日志后重连成功，验证了诊断正确 | 是 |
+| 3 | 帮我写 6 张 ODS 表建表语句和 CSV 导入脚本 | 生成 create_ods.sql（含 skip.header.line.count='1' 跳表头）与 load_ods.sql（含 UNION ALL 行数校验） | 逐字段对照《模拟数据字典》核对表名、类型、顺序无误；导入后亲手跑 count(*) 确认 6 表行数与字典一致 | 是 |
+| 4 | 写五维数据质量评估 SQL | 生成 quality_check.sql（完整性/唯一性/有效性/一致性/准确性 30 余条检查）；首次运行时把 Hive 不支持的 LEFT ANTI JOIN 改写为 LEFT JOIN ... WHERE 右表.主键 IS NULL | 逐条审读了改写后 SQL 与原意的等价性；对 order_id 重复结果用手工 group by 查询交叉验证（600 条冗余 = 586 组：573×2、12×3、1×4） | 是 |
+| 5 | 写缺失值填充和订单去重脚本 | 生成 missing_value.sql（年龄按 1~120 有效均值填充、email 填 unknown 并打标）与 dedup.sql（ROW_NUMBER() OVER(PARTITION BY order_id ORDER BY order_time DESC) 保留最新一条） | 讨论并确认了"保留最新一条"符合业务语义；跑完后亲自核验 null_age=0、15600→15000、removed_cnt=600 与评估数闭环 | 是 |
+| 6 | 系统没有 git 命令，SSH 配置完怎么推送到 GitHub | 指导从国内镜像（npmmirror）下载 Git for Windows 静默安装，配置 user.name/email，生成 ed25519 密钥并添加到平台，git push -u origin main | 自行完成安装与密钥添加（涉及账号操作由本人执行）；push 成功后到 GitHub 网页确认提交可见 | 是 |
+| 7 | hive-server 重启就崩，日志说 "HiveServer2 running as process 7" | 诊断残留 PID 文件问题，建议 docker compose 重建容器并重灌数据；同时给出宿主机重启后的标准恢复流程 | 按流程重建容器后重灌全链路，行数与清洗结果全部复验通过 | 是 |
+| 8 | 按提交清单核对交付物并打包 | 差距分析（缺 xlsx 质量表、AI 日志、脚本改名），生成数据质量预评估表.xlsx、本日志，5 个 SQL 按清单规范重命名，重打提交压缩包 | 逐项对照清单核对文件名与内容；人工补拍 7 张环境关键截图并提供姓名/团队信息 | 是 |
+
+> 说明：8 条记录均为真实过程。凡涉及远程推送、账号操作、业务语义判断（如去重保留策略）的决策均由本人确认后执行。
+
+---
+
+## 三、AI 产出成果清单
+
+- **由 AI 生成的内容**：docker-compose.yml；sql/ods/create_ods.sql、load_ods.sql；sql/quality/quality_check.sql；sql/clean/missing_value.sql、dedup.sql；数据质量预评估表.xlsx；README.md、环境搭建笔记.md、执行步骤.md 初稿；.gitignore
+- **由人工编写的内容**：7 张环境关键截图的拍摄与挑选；团队信息、姓名学号等个人信息；对 AI 产出的全部确认决策与账号操作
+- **人机协作完成的内容**：报错诊断（AI 定位原因 → 本人执行验证）；数据清洗策略（AI 给方案 → 本人确认业务语义 → 双方对账验证）；交付物整理（AI 生成初稿 → 本人核对清单逐项确认）
+
+---
 
 ## 四、问题与解决
 
-| 问题 | 原因 | 解决方式 | AI 参与度 |
-|---|---|---|---|
-| MySQL 容器起不来 | 宿主机 3306 被占 | 映射改 3307:3306 | AI 定位日志并给出改法 |
-| beeline Connection refused | HS2 未就绪且未配 metastore | 补 SERVICE_OPTS + 等待启动 | AI 诊断 |
-| 元数据用 Derby 初始化、重建即丢 | 入口脚本默认行为 | IS_RESUME=true + 远程 metastore | AI 诊断 |
-| Hive 报 LEFT ANTI JOIN 不支持 | Hive 4.0 语法限制 | 改写 LEFT JOIN + IS NULL | AI 改写 |
-| hive-server 重启即崩 | 残留 PID 文件（process 7） | docker compose 重建容器 | AI 读日志定位 |
-| Git Bash 传 /sql 路径报 No FileSystem for scheme "E" | MSYS 路径转换 | MSYS_NO_PATHCONV=1 | AI 定位 |
-| `git` 命令不存在 | 系统未装 Git | 镜像下载 + 静默安装 | AI 全程指导 |
+- **遇到的问题**：① MySQL 容器起不来（3306 被占）；② beeline 连接被拒；③ 元数据被 Derby 误初始化、容器重建即丢；④ Hive 不支持 LEFT ANTI JOIN；⑤ hive-server 重启即崩（残留 PID）；⑥ 系统无 git 命令；⑦ Git Bash 传容器路径报 No FileSystem for scheme "E"
+- **AI 是否有效解决**：全部有效解决（7/7），且每个问题 AI 都给出了可复现的解决步骤而非临时补丁
+- **最终如何解决**：① 端口映射改 3307:3306；② 补 metastore 地址配置 + 等待服务就绪；③ IS_RESUME=true + 远程 Metastore；④ 改写为 LEFT JOIN + IS NULL；⑤ 重建容器；⑥ 镜像下载静默安装；⑦ MSYS_NO_PATHCONV=1。所有解法均已记入《环境搭建笔记.md》沉淀为团队知识
+
+---
 
 ## 五、反思与总结
 
-1. **AI 擅长的事**：报错日志诊断（省去大量盲试时间）、样板代码生成（SQL 脚本/编排文件一次成型）、流程化任务拆解。本周环境搭建如果纯手查文档，预计要多花一倍时间。
-2. **AI 需要人把关的事**：对业务语义的判断（如"订单去重该保留哪条"需要人确认按 order_time 降序保留最新）；提交到远程仓库等外部动作必须人确认后再执行。
-3. **踩坑沉淀**：容器 Up ≠ 服务就绪，要看日志确认；元数据（MySQL 持久）与表数据（容器本地盘）分开理解，重建容器后重跑导入即可。
-4. **下周计划**：把 AI 产出的脚本逐条人工核读一遍，理解每个 SQL 的执行计划与索引/分区影响，避免"能跑但不懂"。
-
-## 六、AI 使用合规声明
-
-本周所有 AI 辅助产出（SQL 脚本、文档、环境配置）均经本人逐条验证执行后才纳入仓库；远程仓库提交、推送等外部操作均由本人确认触发。AI 仅作为效率工具，理解与责任由团队成员承担。
+- **AI 协同带来的价值**：报错诊断效率提升最明显——日志贴进去几秒钟定位根因（如端口冲突、PID 残留），纯手查文档预计多花一倍以上时间；样板代码（建表/导入/评估脚本）一次成型，人工只需核对业务语义
+- **AI 的局限与风险（准确性 / 合规性 / 依赖）**：① AI 生成的 SQL 语法可能不被特定引擎支持（LEFT ANTI JOIN 即翻车），必须实机验证；② 对业务语义无判断力（"重复订单保留哪条"需人拍板）；③ 长会话有口径漂移风险——本次就发现评估表"600 组"应为"600 条冗余（586 组）"，靠人工交叉查询才纠正；④ 涉及账号、远程推送的操作不能交给 AI 自主执行
+- **本次协作中我的能力提升**：学会了读容器日志定位启动链路问题（依赖顺序、服务就绪 ≠ 容器 Up）；掌握了 Hive 窗口函数去重与空值/异常值治理的完整方法论；建立了"AI 产出 → 人工验证 → 沉淀笔记"的工作习惯
+- **对 AI 协同的改进建议**：让 AI 产出脚本时同步附上"验证清单"（跑什么命令、预期什么输出），人核起来更快；跨会话的长任务应在文档里显式记录口径定义，避免统计口径前后不一致
