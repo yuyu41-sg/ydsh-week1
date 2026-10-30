@@ -42,11 +42,11 @@ ydsh-week1/
 ├── data/                         # 6 张 CSV（已被 .gitignore 忽略，不入库）
 │   └── generate_sample_data.py   # 样例数据生成脚本（入库，可复现）
 └── sql/
-    ├── ods/01_create_ods_tables.sql   # ODS 建表（6 张）
-    ├── ods/02_load_ods.sql            # 导入 + 行数校验
-    ├── quality/01_quality_check.sql   # 五维质量评估
-    └── clean/01_missing_value.sql     # 缺失值填充 → dwd_user
-    └── clean/02_dedup.sql             # 订单去重   → dwd_order
+    ├── ods/create_ods.sql   # ODS 建表（6 张）
+    ├── ods/load_ods.sql            # 导入 + 行数校验
+    ├── quality/quality_check.sql   # 五维质量评估
+    └── clean/missing_value.sql     # 缺失值填充 → dwd_user
+    └── clean/dedup.sql             # 订单去重   → dwd_order
 ```
 
 ## 五、快速开始
@@ -58,13 +58,13 @@ docker compose up -d
 docker ps          # 确认 mysql / hive-metastore / hive-server 三容器 Up
 
 # 2. 建表 + 导入
-docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/ods/01_create_ods_tables.sql
-docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/ods/02_load_ods.sql
+docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/ods/create_ods.sql
+docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/ods/load_ods.sql
 
 # 3. 质量评估 + 清洗
-docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/quality/01_quality_check.sql
-docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/clean/01_missing_value.sql
-docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/clean/02_dedup.sql
+docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/quality/quality_check.sql
+docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/clean/missing_value.sql
+docker exec -it ydsh-hiveserver2 beeline -u jdbc:hive2://localhost:10000 -f /sql/clean/dedup.sql
 ```
 
 ## 六、提交规范

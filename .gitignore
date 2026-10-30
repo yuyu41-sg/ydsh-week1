@@ -19,3 +19,7 @@ node_modules/
 .vscode/
 *.tmp
 .DS_Store
+
+# AI 生成的构建产物与提交压缩包
+.数据质量预评估表.ref/
+第1周_*.zip
