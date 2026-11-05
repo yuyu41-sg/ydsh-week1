@@ -23,3 +23,6 @@ node_modules/
 # AI 生成的构建产物与提交压缩包
 .数据质量预评估表.ref/
 第1周_*.zip
+
+# docx 构建中间产物
+.docx_build/
