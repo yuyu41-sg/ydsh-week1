@@ -26,3 +26,6 @@ node_modules/
 
 # docx 构建中间产物
 .docx_build/
+
+# 第2周提交压缩包
+第2周_*.zip
